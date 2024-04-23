@@ -6,7 +6,6 @@ PROJ_DIR=$PWD
 DIST_DIR=${PROJ_DIR}/windows-installer/win64-dist
 BUILD_DIR=$PROJ_DIR/build
 JOBS=$NUMBER_OF_PROCESSORS
-build_sys='cmake'
 
 msg()
 {
@@ -91,41 +90,18 @@ prepare()
 
 }
 
-configure_cmake()
-{
-    msg "Running configuration for Windows"
-    ./configure --program-prefix="$DIST_DIR" --no-debug --release --disable-fast-vapi --with-libsoup3 --with-tests
-    msg "Configured!"
-}
-
-build_cmake()
-{
-    msg "Started building on $JOBS threads"
-    make -j"$JOBS"
-    msg "Successfully builded!"
-    msg "Installing Dino .."
-    make install
-}
-
-test_cmake()
-{
-    msg "Run tests"
-    make test
-}
-
 configure_meson()
 {
     arg=${1:-"none"}
     encr=${2:-"auto"}
     local cmd=""
     if [ x"${arg}" == x"reconfig" ]; then
-	    cmd=--reconfigure
+        cmd=--reconfigure
     fi
-    mkdir -p $BUILD_DIR
     meson setup ${cmd} --prefix "$DIST_DIR" \
-	    -D crypto-backend=${encr} \
-	    -D plugin-ice=enabled \
-	    $PROJ_DIR $BUILD_DIR
+        -D crypto-backend=${encr} \
+        -D plugin-ice=enabled \
+        $PROJ_DIR $BUILD_DIR
 }
 
 build_meson()
@@ -275,8 +251,8 @@ fi
 # no options provided,simply build with defaults
 if [[ $# == 0 ]]; then
 	prepare
-	configure_${build_sys}
-	build_${build_sys}
+	configure_meson
+	build_meson
 	dist_install
 
 	exit 0
@@ -289,16 +265,16 @@ do
 			prepare
 			;;
 		--configure|-c)
-			configure_${build_sys}
+			configure_meson
 			;;
 		--build|-b)
-			build_${build_sys}
+			build_meson
 			;;
 		--test|-t)
-			test_${build_sys}
+			test_meson
 			;;
 		--reconfig|-r)
-			configure_${build_sys} reconfig
+			configure_meson reconfig
 			;;
 		--whipe|-w)
 			clean
@@ -315,14 +291,6 @@ do
 			;;
 		--build-installer)
 			build_installer
-			;;
-		--set-buildsys|-s)
-			if [ x"$2" != x"cmake" -a x"$2" != x"meson" ]; then
-				fatal "Improper build system selected: ${2}!"
-				exit 1;
-			fi
-                        build_sys=$2
-                        shift
 			;;
 		-*)
 			echo "Unknown option $1"

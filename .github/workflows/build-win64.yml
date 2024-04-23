@@ -17,12 +17,9 @@ jobs:
       - name: Install build-dependencies
         run: |
           msys2 -c './build-win64.sh --prepare'
-      - name: Build Dino+ (Meson, without saving)
+      - name: Build Dino+
         run: |
-          msys2 -c './build-win64.sh -s meson -c -b -t -w'
-      - name: Build Dino+ (CMake)
-        run: |
-          msys2 -c './build-win64.sh -s cmake -c -b -t -i'
+          msys2 -c './build-win64.sh -c -b -t -i'
       - name: Build Dino+ installer
         run: |
           msys2 -c './build-win64.sh --build-installer'
